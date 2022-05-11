@@ -33,6 +33,14 @@ class VpnConnection(private val connectionName: String) {
             logger.log(Level.WARNING, "Connection errored")
             throw VpnConnectionException(connectionName = connectionName, cause = e)
         }
+
+        for (idx in 0 until 10) {
+            if (isConnected()) {
+                return
+            }
+            Thread.sleep(2000)
+        }
+        throw VpnConnectionException(connectionName = connectionName, message = "Unable to connect")
     }
 
     fun disconnect() {
@@ -52,6 +60,14 @@ class VpnConnection(private val connectionName: String) {
             logger.log(Level.WARNING, "Disconnect errored")
             throw VpnConnectionException(connectionName = connectionName, cause = e)
         }
+
+        for (idx in 0 until 10) {
+            if (!isConnected()) {
+                return
+            }
+            Thread.sleep(2000)
+        }
+        throw VpnConnectionException(connectionName = connectionName, message = "Unable to disconnect")
     }
 
     fun isConnected(): Boolean {
@@ -72,11 +88,11 @@ class VpnConnection(private val connectionName: String) {
 
         return when (val connectionStatatusString = report.first().trim()) {
             "Disconnected" -> {
-                logger.log(Level.INFO, "Connection status: Connected")
+                logger.log(Level.INFO, "Connection status: $connectionStatatusString")
                 false
             }
             "Connected" -> {
-                logger.log(Level.INFO, "Connection Status: Disconnected")
+                logger.log(Level.INFO, "Connection Status: $connectionStatatusString")
                 true
             }
             else -> {

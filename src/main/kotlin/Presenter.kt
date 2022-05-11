@@ -1,5 +1,6 @@
 import logging.log
 import swingUtils.openFileChooser
+import vpn.VpnConnection
 import vpn.exception.VpnException
 import vpn.listVpnConnections
 import java.lang.Thread.UncaughtExceptionHandler
@@ -11,7 +12,8 @@ import java.util.logging.LogRecord
 import java.util.logging.Logger
 import javax.swing.JOptionPane
 
-class Presenter(private val viewModel: ViewModel, uncaughtExceptionHandler: UncaughtExceptionHandler) : ViewModel.Listener {
+class Presenter(private val viewModel: ViewModel, uncaughtExceptionHandler: UncaughtExceptionHandler) :
+    ViewModel.Listener {
     private val logger: Logger = Logger.getLogger(this::class.java.name)
 
     init {
@@ -54,9 +56,15 @@ class Presenter(private val viewModel: ViewModel, uncaughtExceptionHandler: Unca
         logger.log(Level.INFO, "onVpnConnectionSelect: $s")
     }
 
+    var conn: VpnConnection? = null
     override fun onTargetDirChangeButtonClick() {
         logger.log(Level.INFO, "onTargetDirChangeButtonClick")
 
+        conn?.disconnect()
+        val newConnectionName = viewModel.vpnConnection
+        if (newConnectionName != null) {
+            conn = VpnConnection(newConnectionName).apply { reconnect() }
+        }
     }
 
     override fun onFilesListChangeButtonClick() {
